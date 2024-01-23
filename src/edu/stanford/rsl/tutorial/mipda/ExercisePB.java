@@ -30,7 +30,7 @@ public class ExercisePB {
 	public enum RampFilterType {NONE, RAMLAK, SHEPPLOGAN};
 	boolean filterShownOnce = false;
 	
-	RampFilterType filterType = RampFilterType.NONE; //TODO: Select one of the following values: NONE, RAMLAK, SHEPPLOGAN
+	RampFilterType filterType = RampFilterType.SHEPPLOGAN; //TODO: Select one of the following values: NONE, RAMLAK, SHEPPLOGAN
 	// (make this choice when you have finished the rest of the exercise)
 	
 	SheppLogan sheppLoganPhantom;
@@ -110,7 +110,7 @@ public class ExercisePB {
 		switch (filterType) {
 		
 		case RAMLAK: // RamLak filter
-			ramlak(ramp, paddedSize, deltaS); // TODO: go to this method and implement it
+			ramlak(ramp, paddedSize, deltaS); // DONE: go to this method and implement it
 			break;
 			
 		case SHEPPLOGAN: // SheppLogan filter
@@ -124,7 +124,8 @@ public class ExercisePB {
 		if (!filterShownOnce)
 			ramp.show("Ramp Filter in Spatial Domain (rearranged for FFT-Shift)");
 		
-		// <your code> // TODO: Transform the filter into frequency domain (look for an appropriate method of Grid1DComplex)
+		// DONE: Transform the filter into frequency domain (look for an appropriate method of Grid1DComplex)
+		ramp.transformForward();
 		
 		if(!filterShownOnce) {
 			
@@ -132,16 +133,20 @@ public class ExercisePB {
 			filterShownOnce = true;
 		}
 
-		Grid1DComplex projectionF = null;// TODO: Transform the input sinogram signal ...
-		// <your code> // ... into the frequency domain (hint: similar to the last TODO)
+		// Transform the input sinogram signal ...
+		Grid1DComplex projectionF = new Grid1DComplex(projection);
+		// ... into the frequency domain (hint: similar to the last TODO)
+		projectionF.transformForward();
 		
 		if (projectionF != null) {
 			for(int p = 0; p < projectionF.getSize()[0]; p++){
-				// <your code> // TODO: Multiply the transformed sinogram with the ramp filter (complex multiplication) 
+				// DONE: Multiply the transformed sinogram with the ramp filter (complex multiplication) 
+				projectionF.multiplyAtIndex(p, ramp.getAtIndex(p));
 			}	
 		}
 
-		// <your code> // TODO: transform back to get the filtered sinogram (i.e. invert the Fourier transform)
+		// DONE: transform back to get the filtered sinogram (i.e. invert the Fourier transform)
+		projectionF.transformInverse();
 				
 		// crop the image to its initial size
 		Grid1D grid = new Grid1D(projection);
@@ -154,17 +159,22 @@ public class ExercisePB {
 		return grid;
 	}
 	
-	// TODO: implement the ram-lak filter in the spatial domain
+	// DONE: implement the ram-lak filter in the spatial domain
 	public void ramlak(Grid1DComplex filterGrid, int paddedSize, double deltaS) {
-
+		
 		final float constantFactor = -1.f / ((float) ( Math.PI * Math.PI * deltaS * deltaS));
 		
-		// <your code>  // TODO: set correct value in filterGrid for zero frequency
-		
-		for (int i = 1; i < paddedSize/2; ++i) { // the "positive wing" of the filter 
+		// DONE: set correct value in filterGrid for zero frequency
+		float tau  = (float) deltaS;
+		float zeroCase = 1.f / (4.f * tau * tau); 
+		filterGrid.setAtIndex(0, zeroCase);
+
+		for (int i = 1; i < paddedSize / 2; ++i) { // the "positive wing" of the filter 
 			
-			if (false) {// TODO: condition -> only odd indices are nonzero
-				// <your code> // TODO: use setAtIndex and the constant "constantFactor"
+			// DONE: condition -> only odd indices are nonzero
+			if (i % 2 == 1) {
+				// DONE: use setAtIndex and the constant "constantFactor"
+				filterGrid.setAtIndex(i, constantFactor / (float) (i * i));
 			}
 		}
 		
@@ -173,8 +183,10 @@ public class ExercisePB {
 		for (int i = paddedSize / 2; i < paddedSize; ++i) { 
 			
 			final int tmp = paddedSize - i; // now we go back from N/2 to 1
-			if (false) {// TODO: condition -> only odd indices are nonzero
-				// <your code> // TODO: use setAtIndex and the constant "constantFactor"
+			// DONE: condition -> only odd indices are nonzero
+			if (i % 2 == 1) {
+				// DONE: use setAtIndex and the constant "constantFactor"
+				filterGrid.setAtIndex(i, constantFactor / (float) (tmp * tmp));
 			}
 		}
 	}
@@ -184,18 +196,21 @@ public class ExercisePB {
 		
 		final float constantFactor = - 2.f / ((float) ( Math.PI * Math.PI * deltaS * deltaS));
 		
-		// <your code> // TODO: set correct value in filterGrid for zero frequency
+		// DONE: set correct value in filterGrid for zero frequency
+		filterGrid.setAtIndex(0, -constantFactor);
 		
-		for (int i = 1; i < paddedSize/2; ++i){ // the "positive wing" of the filter
-			// <your code> // TODO: use setAtIndex and the constant "constantFactor"
+		for (int i = 1; i < paddedSize / 2; ++i){ // the "positive wing" of the filter
+			// DONE: use setAtIndex and the constant "constantFactor"
+			filterGrid.setAtIndex(i, constantFactor * (1.f / (4.f * i * i - 1)));
 		}
 
 		// remark: the sorting of frequencies in the Fourier domain is 0,...,k,-k,...,1
 		// to implement the "negative wing", a periodicity assumption is used and the values are added accordingly
 		for (int i = paddedSize / 2; i < paddedSize; ++i) {
 			
-			final float tmp = paddedSize - i; // now we go back from N/2 to 1
-			// <your code> // TODO: use setAtIndex and the constant "constantFactor"
+			final int tmp = paddedSize - i; // now we go back from N/2 to 1
+			// DONE: use setAtIndex and the constant "constantFactor"
+			filterGrid.setAtIndex(i, constantFactor * (1.f / (4.f * tmp * tmp - 1)));
 		}
 	}
 
