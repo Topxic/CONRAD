@@ -1,6 +1,7 @@
 package edu.stanford.rsl.tutorial.mipda;
 
 import java.awt.Color;
+import java.util.Vector;
 
 import edu.stanford.rsl.conrad.numerics.SimpleMatrix;
 import edu.stanford.rsl.conrad.numerics.SimpleMatrix.InversionType;
@@ -70,12 +71,13 @@ public class ExerciseREG {
 		double t2 = x.getElement(3);
 		
 		//calculate the absolute value of r = r1+i*r2
-		double abs_r = 0.d;//TODO
+		double abs_r = Math.sqrt(r1 * r1 + r2 * r2); // TODO
 		//TODO: normalize r
-		//TODO: normalize r
+		r1 /= abs_r;
+		r2 /= abs_r;
 		
 		//calculate the angle phi
-		double phi = 0.d;//TODO
+		double phi = Math.atan2(r2, r1); //TODO
 		
 		// return both translation and rotation in a RigidParameters object
 		return new RigidParameters(phi,new SimpleVector(t1,t2));
@@ -89,17 +91,22 @@ public class ExerciseREG {
 		
 		// build up measurement matrix m for the complex numbers problem  
 		for(int i = 0; i < numPoints; i++) {
+
+			double qk1 = q.getRow(i).getElement(0);
+			double qk2 = q.getRow(i).getElement(1);
 			
 			//real part of the problem (even rows)
-				//TODO
-				//TODO
-				//TODO
-				//TODO
+			m.setRowValue(2 * i, new SimpleVector(
+				qk1, //TODO
+				-qk2, //TODO
+				1, //TODO
+				0)); //TODO
 			//imaginary part of the problem (odd rows)
-				//TODO
-				//TODO
-				//TODO
-				//TODO
+			m.setRowValue(2 * i + 1, new SimpleVector(
+				qk2, //TODO
+				qk1, //TODO
+				0, //TODO
+				1)); //TODO
 		}
 		
 		return m;
@@ -114,7 +121,9 @@ public class ExerciseREG {
 		for(int i = 0; i < numPoints; i++) {
 
 			//TODO: real part of the problem
+			b.setElementValue(2 * i, p.getElement(i, 0));
 			//TODO: imaginary part of the problem
+			b.setElementValue(2 * i + 1, p.getElement(i, 1));
 		}
 		
 		return b;
@@ -136,7 +145,9 @@ public class ExerciseREG {
 		for(int i = 0; i < transformedPoints.getRows(); i++){
 			
 			//TODO: rotate (you can use SimpleOperators)
+			SimpleVector v = SimpleOperators.multiply(r, points.getRow(i));
 			//TODO: translate (you can use SimpleOperators)
+			transformedPoints.setRowValue(i, SimpleOperators.add(v, parameter.getTranslation()));
 		}
 		
 		return transformedPoints;
