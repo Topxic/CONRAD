@@ -11,6 +11,7 @@ import edu.stanford.rsl.conrad.data.numeric.Grid3D;
 import edu.stanford.rsl.conrad.data.numeric.NumericPointwiseOperators;
 import edu.stanford.rsl.conrad.geometry.transforms.AffineTransform;
 import edu.stanford.rsl.conrad.numerics.SimpleMatrix;
+import edu.stanford.rsl.conrad.numerics.SimpleOperators;
 import edu.stanford.rsl.conrad.utils.ImageUtil;
 import edu.stanford.rsl.conrad.utils.VisualizationUtil;
 import edu.stanford.rsl.conrad.numerics.SimpleVector;
@@ -62,7 +63,7 @@ public class ExerciseMI {
 		// initialize cost function
 		CostFunction costFunction = exObj.new CostFunction();
 		
-		/* Hint for TODO-s:
+		/* Hint for TODO-s: 
 		 * The cost function computes the difference of a certain measure for both images. 
 		 * You can look up the details in the respective nested class below if you want to,
 		 * otherwise we spare you the details and point you right to the tasks.
@@ -129,8 +130,9 @@ public class ExerciseMI {
 				
 				if(jointHistogram.getElement(i, j) != 0) {
 					
+					double p = jointHistogram.getElement(i, j);
 					// calculate entropy of the joint histogram (hint: use logarithm base 2 and use the correct sign)
-					entropy_jointHisto = 1;//TODO
+					entropy_jointHisto -= p * Math.log(p) / Math.log(2); // TODO
 				}
 			}
 		}
@@ -142,17 +144,17 @@ public class ExerciseMI {
 		for(int i = 0; i < histSize; i++){
 			
 			if(histo1.getElement(i) != 0){
-				
 				// calculate entropy for histogram 1 (hint: use logarithm base 2 and use the correct sign)
-				entropy_histo1 = 1;//TODO
+				double p = histo1.getElement(i);
+				entropy_histo1 -= p * Math.log(p) / Math.log(2);//TODO
 			}
 			
 			if(histo2.getElement(i) != 0){
-				
 				// calculate entropy for histogram 2 (hint: use logarithm base 2 and use the correct sign)
-				entropy_histo2 = 1;//TODO
+				double p = histo2.getElement(i);
+				entropy_histo2 -= p * Math.log(p) / Math.log(2);//TODO
 			}
-		}
+		} 
 
 		// Note: Make sure that you considered the correct sign in the entropy formulas!
 		
@@ -201,11 +203,13 @@ public class ExerciseMI {
 				// jH(k,l) counts how often the intensity pair k in the reference image, and l in the moving image occurs (at the corresponding location)
 				// use the correct indices and set the value for jH properly
 				//TODO
+				jH.addToElement(value_ref, value_mov, 1);
 			}
 		}
 		
 		// divide by the number of elements in order to get probabilities
-		//TODO
+		// TODO
+		jH.divideBy(imWidth * imHeight);
 		
 		return jH;
 	}
@@ -233,11 +237,13 @@ public class ExerciseMI {
 					
 					// sum up over the rows
 					//TODO
+					hist.addToElement(j, jH.getElement(i, j));
 				}
 				else {
 					
 					// sum up over the columns
 					//TODO
+					hist.addToElement(i, jH.getElement(i, j));
 				}				
 			}
 		}
